@@ -156,7 +156,7 @@ plt.show()
 
 # Save model
 
-torch.save(model.state_dict(), "saved_models/baseline_cnn.pt")
+torch.save(model.state_dict(), "D:/saved_models/baseline_cnn.pt")
 
 # Test model
 
@@ -164,7 +164,7 @@ test_dataset = datasets.ImageFolder(root = f"{DATA_ROOT}/test", transform = val_
 test_loader  = DataLoader(test_dataset, batch_size = BATCH_SIZE, shuffle = False)
 
 loaded_model = SimpleCNN(num_classes).to(device)
-loaded_model.load_state_dict(torch.load("saved_models/baseline_cnn.pt", weights_only = True))
+loaded_model.load_state_dict(torch.load("D:/saved_models/baseline_cnn.pt", weights_only = True))
 
 loaded_model.eval()
 
