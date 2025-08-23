@@ -1,19 +1,20 @@
+Basics for understanding CNN 
 
-Basics for Understanding CNN Code (Plant Disease Detection)
+1. CNN (Convolutional Neural Network)
 
-1. CNN (Convolutional Neural Network) Basics
---------------------------------------------
-- CNN is a deep learning model designed for image recognition and classification.
-- Key layers:
+* CNN is a deep learning model designed for image recognition and classification.
+* Key layers:
+
   * Convolution (Conv2D): Extracts features from images (edges, textures, shapes).
   * Pooling (MaxPooling): Reduces image size while keeping important features.
   * Fully Connected / Dense layer: Combines extracted features and makes final predictions.
 
 2. Convolution Layer
---------------------
-- A filter (kernel) slides over the input image, computing dot products.
-- Example: A 3x3 filter scans the image and extracts local features (like edges).
-- Parameters:
+
+* A filter (kernel) slides over the input image, computing dot products.
+* Example: A 3x3 filter scans the image and extracts local features (like edges).
+* Parameters:
+
   * in_channels: number of input channels (RGB = 3).
   * out_channels: number of filters (how many feature maps are produced).
   * kernel_size: size of filter (3x3, 5x5...).
@@ -21,83 +22,135 @@ Basics for Understanding CNN Code (Plant Disease Detection)
   * stride: step size when moving the filter.
 
 3. Pooling Layer
-----------------
-- MaxPooling: takes the maximum value in each region (e.g. 2x2).
-- Purpose: reduces spatial size (downsampling), keeps important info, reduces computation.
+
+* MaxPooling: takes the maximum value in each region (e.g. 2x2).
+* Purpose: reduces spatial size (downsampling), keeps important info, reduces computation.
 
 4. Flatten + Dense Layer
--------------------------
-- Flatten: converts feature maps into 1D vector.
-- Dense/Linear Layer: standard neural network layers where each neuron connects to all inputs.
-- Example:
-  Linear(64*56*56, 128) means flatten 64 feature maps of size 56x56 into a vector, then connect to 128 neurons.
+
+* Flatten: converts feature maps into 1D vector.
+* Dense/Linear Layer: standard neural network layers where each neuron connects to all inputs.
+* Example: Linear(64*56*56, 128) means flatten 64 feature maps of size 56x56 into a vector, then connect to 128 neurons.
 
 5. Activation Functions
------------------------
-- ReLU (Rectified Linear Unit): f(x) = max(0, x).
-- Introduces non-linearity so model can learn complex patterns.
+
+* ReLU (Rectified Linear Unit): f(x) = max(0, x).
+* Introduces non-linearity so model can learn complex patterns.
 
 6. Dropout
-----------
-- Randomly "drops" some neurons during training.
-- Prevents overfitting by not letting the model rely too heavily on specific neurons.
+
+* Randomly "drops" some neurons during training.
+* Prevents overfitting by not letting the model rely too heavily on specific neurons.
 
 7. Loss Function: CrossEntropyLoss
-----------------------------------
-- Suitable for classification problems with multiple classes.
-- Formula: compares predicted probability distribution with true labels (one-hot encoded).
-- In PyTorch: nn.CrossEntropyLoss() = softmax + negative log likelihood.
+
+* Suitable for classification problems with multiple classes.
+* Formula: compares predicted probability distribution with true labels (one-hot encoded).
+* In PyTorch: nn.CrossEntropyLoss() = softmax + negative log likelihood.
 
 8. Optimizer: Adam
-------------------
-- Adaptive Moment Estimation (Adam) optimizer combines:
+
+* Adaptive Moment Estimation (Adam) optimizer combines:
+
   * Momentum (remembers past gradients).
   * RMSProp (adapts learning rate per parameter).
-- Faster and more stable than vanilla SGD.
-- Common learning rate: 0.001.
+* Faster and more stable than vanilla SGD.
+* Common learning rate: 0.001.
 
 9. Training Loop (in code)
---------------------------
-- model.train(): sets model to training mode (enables dropout, batchnorm update).
-- Forward pass: input → model → outputs.
-- Loss computation: compare outputs with labels.
-- Backward pass: loss.backward() computes gradients.
-- optimizer.step(): update weights using Adam.
-- Track metrics: loss, accuracy.
+
+* model.train(): sets model to training mode (enables dropout, batchnorm update).
+* Forward pass: input → model → outputs.
+* Loss computation: compare outputs with labels.
+* Backward pass: loss.backward() computes gradients.
+* optimizer.step(): update weights using Adam.
+* Track metrics: loss, accuracy.
 
 10. Validation Loop
--------------------
-- model.eval(): sets model to evaluation mode (disables dropout).
-- with torch.no_grad(): disables gradient computation (saves memory).
-- Runs forward pass on validation data, calculates loss and accuracy.
+
+* model.eval(): sets model to evaluation mode (disables dropout).
+* with torch.no_grad(): disables gradient computation (saves memory).
+* Runs forward pass on validation data, calculates loss and accuracy.
 
 11. Testing
------------
-- Same as validation, but with test dataset (unseen data).
-- Final accuracy shows model generalization ability.
+
+* Same as validation, but with test dataset (unseen data).
+* Final accuracy shows model generalization ability.
 
 12. Dataset Preparation
------------------------
-- torchvision.datasets.ImageFolder expects folder structure:
+
+* torchvision.datasets.ImageFolder expects folder structure:
   dataset/
-      train/class1/*.jpg
-      train/class2/*.jpg
-      val/class1/*.jpg
-      ...
-- transform: preprocess images (resize, convert to tensor, normalize).
+  train/class1/*.jpg
+  train/class2/*.jpg
+  val/class1/*.jpg
+  ...
+* transform: preprocess images (resize, convert to tensor, normalize).
 
 13. Hyperparameters in Code
-----------------------------
-- BATCH_SIZE = 32 → number of images per iteration.
-- IMG_SIZE = 224 → images resized to 224x224.
-- EPOCHS = 3 → full passes through dataset.
-- Learning rate = 0.001 → step size in optimizer.
 
-Summary:
----------
+* BATCH_SIZE = 32 → number of images per iteration.
+* IMG_SIZE = 224 → images resized to 224x224.
+* EPOCHS = 3 → full passes through dataset.
+* Learning rate = 0.001 → step size in optimizer.
+
+14. Loss and Accuracy
+
+* Loss:
+
+  * Measures how far the model's predictions are from the true labels.
+  * In multi-class classification, CrossEntropyLoss is used.
+  * Smaller loss means better predictions.
+  * Example in code:
+    loss = criterion(outputs, labels)           # Average loss for batch
+    running_loss += loss.item() * imgs.size(0)  # Total loss for the batch
+    epoch_loss = running_loss / len(dataset)    # Average loss for the epoch
+
+* Accuracy:
+
+  * Percentage of correct predictions out of all samples.
+  * Example in code:
+    running_correct += (outputs.argmax(1) == labels).sum().item()
+    epoch_acc = running_correct / len(dataset)
+  * Higher accuracy means the model predicts more images correctly.
+
+* Application in stages:
+
+  1. Train: calculate loss & accuracy while learning (backpropagation updates weights).
+  2. Validation: forward pass only, evaluate model performance after each epoch.
+  3. Test: forward pass on unseen data, final evaluation of generalization.
+
+15. WeightedRandomSampler
+
+* Balances training classes by sampling inversely to class frequency.
+* Ensures each class contributes equally in training batches.
+* Tracks number of samples per class and assigns higher weights to rare classes.
+* Works with DataLoader to create balanced batches for training.
+
+16. Detect overfitting
+
+* Overfitting occurs when the model performs well on training data but poorly on validation/test data.
+
+* Signs of overfitting:
+
+  * Training loss continues to decrease while validation loss starts increasing.
+  * Training accuracy is much higher than validation accuracy.
+
+* Remedies:
+
+  * Use dropout layers.
+  * Apply data augmentation.
+  * Reduce model complexity.
+  * Early stopping based on validation performance.
+
+# Summary:
+
 1. Convolution extracts features.
 2. Pooling reduces size & keeps key info.
 3. Flatten + Dense for classification.
 4. CrossEntropyLoss compares prediction vs truth.
 5. Adam optimizer updates weights efficiently.
 6. Training loop learns, validation checks progress, testing evaluates generalization.
+7. Loss measures prediction error; accuracy measures correct predictions.
+8. WeightedRandomSampler balances class distribution in training.
+9. Overfitting can be detected by comparing training and validation metrics; preventive strategies include dropout, augmentation, and early stopping.
