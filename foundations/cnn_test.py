@@ -43,24 +43,35 @@ class SimpleCNN(nn.Module):
             nn.Conv2d(3, 32, kernel_size = 3, padding = 1),  
             # Output: 32 img(32, 224, 224)
             # 32 kernels with size 3 x 3 x 3(each slides 1 pixel over img => 1 feature map 224 x 224) => 32 feature maps 224 x 224
-            # The way to compute the value of each pixel in the feature map is by taking the dot product of the kernel and the input image patch it covers.
+            # The way to compute the value of each pixel in the feature map is by taking the dot product of the kernel and the input image patch it covers
 
             nn.ReLU(),
+            # Apply ReLU activation to each pixel in the feature map, ReLU(x) = max(0, x)
+
             nn.MaxPool2d(2, 2),  
-            # img(32, 32, 112, 112)
-            
+            # 32 img(32, 32, 112, 112)
+            # Divide the feature map into 2 x 2 regions (non-overlapping) and take the max value from each region so the output size is reduced by 2
+
             nn.Conv2d(32, 64, kernel_size = 3, padding = 1), 
-            # img(32, 64, 112, 112)
+            # 32 img(32, 64, 112, 112)
             nn.ReLU(),
             nn.MaxPool2d(2,2)   
-            # img(32, 64, 56, 56)
+            # 32 img(32, 64, 56, 56)
         )
         self.classifier = nn.Sequential(
             nn.Flatten(),
-            #img
+            # 32 tensor 3D (64, 56, 56) => 32 vector 1D (64*56*56), each vector has 200704 dimensions (x = [x1, x2, ..., x200704])
+
             nn.Linear(64*56*56, 128),
+            # 32 vector 1D (64*56*56) => 32 vector 1D (128), each vector has 128 dimensions
+            # By applying a linear transformation: y = Wx + b, yi = sigma(wij * xj) + bi (j = 1, ..., n)
+            # Here: n = 64*56*56, x = [x1, x2, ..., x200704], W = (128, 64*56*56), b = [b1, b2, ..., b128], y = [y1, y2, ..., y128]
+            # W has 128 rows and 200704 columns, each row corresponds to a different output neuron, each column corresponds to a different input feature
+
             nn.ReLU(),
             nn.Dropout(0.25),
+            # yi' = 0 with probability 0.25, yi' = yi / 0.75 with probability 0.75
+
             nn.Linear(128, num_classes)
         )
         
