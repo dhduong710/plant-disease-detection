@@ -1,0 +1,61 @@
+Confusion Matrix and Classification Report
+
+# Confusion Matrix
+
+A confusion matrix is a table used to evaluate the performance of a classification model. 
+It shows how many predictions were correct and where the model made mistakes.
+
+* Structure of a Confusion Matrix (for multi-class classification):
+
+               Predicted
+               A   B   C
+    Actual A  TP  FP  FP
+           B  FN  TP  FN
+           C  FN  FN  TP
+
+- TP (True Positive): Correctly predicted as the actual class.
+- FP (False Positive): Incorrectly predicted as another class.
+- FN (False Negative): Failed to predict the actual class.
+
+This helps us see not only the overall accuracy, but also which classes are often misclassified.
+
+
+# Classification Report
+
+The classification report provides precision, recall, F1-score for each class.
+
+* Key Metrics:
+
+1. Precision = TP / (TP + FP)  
+   - Out of all predicted positives, how many were correct?  
+   - High precision = few false positives.
+
+2. Recall (Sensitivity) = TP / (TP + FN)  
+   - Out of all actual positives, how many were correctly predicted?  
+   - High recall = few false negatives.
+
+3. F1-score = 2 * (Precision * Recall) / (Precision + Recall)  
+   - Harmonic mean of precision and recall.  
+   - Useful when we want a balance between precision and recall.
+
+4. Support
+   - Number of true samples in the dataset for each class.
+
+
+# Averages in Classification Report
+
+* Macro Average: 
+  Average of metrics across all classes without weighting by class size.  
+  → Treats all classes equally, even if some are small.
+
+* Weighted Average:  
+  Average of metrics across all classes, weighted by class size.  
+  → Larger classes have more impact on the final score.
+
+
+# Conclusion
+
+* Confusion matrix = Where the model makes mistakes (class-to-class).  
+
+* Classification report = How well the model performs per class (precision, recall, F1).
+
