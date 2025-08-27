@@ -106,22 +106,82 @@ Transfer Learning, ResNet-50, and MobileNetV2
     → Almost 3× fewer FLOPs while maintaining similar accuracy.
 
 
-4. Advantages of ResNet-50 and MobileNetV2 in Transfer Learning
+4. Focal Loss
+
+In many real-world datasets, the class distribution is often imbalanced.  
+For example, some classes may have very few samples compared to others, 
+and certain categories may be visually or semantically difficult to distinguish.
+
+Problem with standard Cross-Entropy Loss:
+- Easy samples (already predicted correctly with high probability) still 
+  contribute significant loss.  
+- Majority classes dominate the learning process, while minority classes 
+  or hard cases receive less attention.  
+
+Solution: Focal Loss
+Focal Loss modifies Cross-Entropy by adding a modulating factor:
+
+    FL(p_t) = -α_t (1 - p_t)^γ log(p_t)
+
+- p_t: predicted probability for the true class.  
+- γ: focusing parameter (commonly set to 2). Higher values reduce the loss 
+  from easy examples more aggressively.  
+- α_t: class weight (used to rebalance minority classes).  
+
+Effect:
+- For easy samples (p_t ≈ 0.9), the loss is down-weighted.  
+- For hard or minority-class samples (p_t ≈ 0.3), the loss remains high, 
+  forcing the model to pay more attention.  
+
+
+5. Fine-tuning
+
+Fine-tuning is the process of unfreezing some of the pre-trained network’s layers 
+and updating them during training.
+
+- Phase A: Freeze most of the network and train only the classifier head 
+  (the final fully connected layer).  
+- Phase B: Gradually unfreeze the last few convolutional blocks 
+  (e.g., layer4 in ResNet-50), and continue training with a smaller learning rate.  
+
+Why it matters:
+- Some datasets contain subtle differences between classes.  
+- Fine-tuning deeper layers allows the model to adjust pre-trained filters 
+  to better capture domain-specific patterns.  
+- Combined with Focal Loss, this ensures the model does not overfit to 
+  majority classes while still learning fine-grained features.  
+
+
+6. Advantages of Combining These Techniques
 
 - ResNet-50:
-  • High representational power.
-  • Robust features for diverse domains.
-  • Effective for medium/large datasets.
+  • Strong representational power for capturing detailed features.  
+  • Effective when sufficient training samples per class are available.  
 
 - MobileNetV2:
-  • Extremely efficient and lightweight.
-  • Good choice for limited hardware or real-time applications.
-  • Performs surprisingly well on small datasets.
+  • Lightweight and efficient.  
+  • Suitable for mobile or edge deployment in resource-constrained environments.  
+
+- Focal Loss:
+  • Addresses class imbalance by focusing training on minority and 
+    hard-to-distinguish classes.  
+  • Particularly useful when some categories are underrepresented or 
+    difficult to separate.  
+
+- Fine-tuning:
+  • Allows the model to adapt pre-trained filters to the specific dataset.  
+  • Improves accuracy on subtle or domain-specific patterns compared 
+    to training only the final layer.  
+
 
 Conclusion
 
-Transfer learning combined with modern architectures such as ResNet-50
-and MobileNetV2 enables powerful and efficient solutions in computer
-vision. ResNet-50 provides depth and accuracy, while MobileNetV2 offers
-efficiency and speed, making them complementary choices for different
-scenarios.
+Transfer learning combined with modern CNN architectures and specialized 
+techniques makes classification tasks both accurate and efficient.
+
+- ResNet-50 provides depth and accuracy.  
+- MobileNetV2 provides efficiency and speed.  
+- Focal Loss ensures the model learns effectively even with imbalanced 
+  or challenging datasets.  
+- Fine-tuning tailors the pre-trained knowledge to the specific characteristics 
+  of the target domain.
