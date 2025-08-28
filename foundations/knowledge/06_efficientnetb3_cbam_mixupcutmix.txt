@@ -1,0 +1,128 @@
+EfficientNet-B3, CBAM, MixUp, and CutMix
+
+1.  EfficientNet-B3 
+
+EfficientNet is a family of CNN models (by Google, 2019) introducing 
+compound scaling, which balances three dimensions of a network:
+-   Depth (number of layers)
+-   Width (number of channels per layer)
+-   Resolution (input image size)
+
+Instead of arbitrarily scaling these, EfficientNet uses a compound
+coefficient φ to scale them uniformly.
+
+Scaling formulas: 
+- Depth: d = α^φ
+- Width: w = β^φ
+- Resolution: r = γ^φ
+with the constraint: α * β² * γ² ≈ 2
+
+EfficientNet-B3 is a mid-sized variant:
+- Input size: 300 × 300
+- Parameters: ~12 million
+- FLOPs: ~1.8B
+- Accuracy: higher than ResNet-50 while being more efficient
+
+Architecture: 
+- Stem convolution 
+First layer (Conv + BN + Swish activation), reduces image size.
+
+- MBConv blocks 
+Mobile Inverted Bottleneck with:
+• Depthwise separable convolution (lightweight conv)
+• Squeeze-and-Excitation (SE) module for channel attention
+• Skip connections (like ResNet) 
+
+- Classifier head 
+Global average pooling → dropout → fully connected layer (Softmax).
+
+Advantages:
+- High accuracy vs parameter count
+- Efficient for mobile/edge devices
+- Transfer learning friendly (pretrained on ImageNet1K)
+
+2.  CBAM (Convolutional Block Attention Module)
+
+CBAM improves feature learning by telling the network what and where to
+focus.
+
+- Channel Attention (CA)
+• Focuses on what features are important.
+• Uses global average pooling and global max pooling along spatial
+dimensions.
+• Passes pooled features through a shared MLP, then combines.
+
+Formula:
+M_c(F) = σ(MLP(AvgPool(F)) + MLP(MaxPool(F)))
+F_c = M_c(F) ⊗ F
+
+- Spatial Attention (SA)
+• Focuses on where features are important.
+• Uses average pooling and max pooling along channel dimension.
+• Concatenates and applies a convolution.
+
+Formula:
+M_s(F_c) = σ(Conv([AvgPool(F_c); MaxPool(F_c)]))
+F_s = M_s(F_c) ⊗ F_c
+
+- Final CBAM output
+F_out = F_s
+
+Effect:
+- Channel attention → emphasizes "what" is useful.
+- Spatial attention → emphasizes "where" is useful.
+- Lightweight and can be inserted into CNNs with little overhead.
+
+3. MixUp
+
+MixUp creates virtual training samples by linearly interpolating two
+random examples.
+
+Formula:
+x’ = λ x_i + (1 - λ)x_j
+y’ = λ y_i + (1 - λ)y_j
+
+Where:
+- x_i, x_j: two input images
+- y_i, y_j: corresponding labels (one-hot)
+- λ ~ Beta(α, α)
+
+Effect:
+- Forces model to learn smoother decision boundaries
+- Reduces overfitting
+- Improves robustness to noisy labels
+- Encourages better generalization
+
+Downside: Images can look unrealistic (blurry).
+
+4. CutMix
+
+CutMix pastes a patch from one image into another. Unlike MixUp (linear
+blend), CutMix preserves image realism.
+
+Formula:
+x’ = M ⊙ x_i + (1 - M) ⊙ x_j
+y’ = λ y_i + (1 - λ)y_j
+
+Where:
+- M: binary mask defining the cut region
+- ⊙: element-wise multiplication
+- λ = 1 - Area(cut)/Area(image)
+
+Effect:
+- Preserves local features (better for localization tasks)
+- Improves classification + detection
+- Combines advantages of Cutout (region masking) and MixUp (label
+interpolation)
+
+Downside: CutMix patches may confuse the model if classes are very
+similar.
+
+5.  Combined Use (EfficientNet-B3 + CBAM + MixUp/CutMix)
+
+In practice:
+- EfficientNet-B3 provides an efficient, accurate backbone.
+- CBAM enhances feature extraction by attention (better plant disease
+spotting, object recognition).
+- MixUp & CutMix improve data diversity → stronger generalization,
+robustness to overfitting.
