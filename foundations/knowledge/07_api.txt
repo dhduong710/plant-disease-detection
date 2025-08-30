@@ -74,4 +74,4 @@ Steps:
   • Body → form-data → Key: file, Value: upload image  
 
 - cURL (command line):
-  curl -X POST "http://127.0.0.1:5000/predict" -F "file=@\"D:/PlantVillage/Tomato_Late_blight/test_image.jpg\""
+  curl -X POST "http://127.0.0.1:5000/predict" -F "file=@\"D:\PlantVillage\Pepper__bell___Bacterial_spot\00f2e69a-1e56-412d-8a79-fdce794a17e4___JR_B.Spot 3132.JPG\""
