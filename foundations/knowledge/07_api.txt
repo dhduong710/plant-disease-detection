@@ -1,0 +1,77 @@
+API
+
+1. What is an API?
+
+- An API (Application Programming Interface) allows software applications to communicate with each other.
+- In web development, REST APIs follow a client-server model:
+
+  • Client: sends a request (web, mobile app).  
+  • Server: receives the request, processes it, and returns a response.  
+  • Data format: usually JSON (lightweight and easy to parse).  
+
+- Common HTTP Methods:
+  • GET: retrieve data from the server.  
+  • POST: send data to the server (upload files, create new resources).  
+  • PUT/PATCH: update existing data.  
+  • DELETE: remove data.  
+
+Example JSON response:
+{
+  "class": "Tomato_Late_blight",
+  "probability": 0.95
+}
+
+
+2. Flask for API
+
+- Flask is a lightweight Python web framework, often used for building REST APIs.
+
+Basic structure:
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+
+@app.route("/predict", methods = ["POST"])
+def predict():
+    return jsonify({"message": "Hello API"})
+
+if __name__ == "__main__":
+    app.run(debug = True)
+
+- @app.route("/predict", methods = ["POST"]): defines an endpoint "/predict" that accepts POST requests.  
+- jsonify(): converts a Python dictionary into JSON format.
+
+
+3. Project: Plant Disease Detection API
+
+This project builds an API that loads a trained deep learning model (EfficientNet-B3 + CBAM + Mixup + CutMix) for plant disease classification.
+
+Steps:
+1) Load model:
+   model.load_state_dict(torch.load("efficientnet_b3_cbam_mixup_cutmix.pt"))
+   model.eval()
+
+2) Preprocess uploaded image:
+   - Read the image from request (PIL.Image.open).  
+   - Apply validation transforms (Resize → ToTensor → Normalize).  
+
+3) Prediction:
+   - Pass the image tensor through the model.  
+   - Get the predicted class and probability.  
+
+4) Return JSON response:
+   {
+     "class": "Pepper__bell___Bacterial_spot",
+     "probability": 0.9812
+   }
+
+
+4. Testing the API:
+
+- Postman:
+  • Method = POST  
+  • URL = http://127.0.0.1:5000/predict  
+  • Body → form-data → Key: file, Value: upload image  
+
+- cURL (command line):
+  curl -X POST "http://127.0.0.1:5000/predict" -F "file=@\"D:/PlantVillage/Tomato_Late_blight/test_image.jpg\""
