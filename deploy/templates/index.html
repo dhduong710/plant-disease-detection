@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>🌿 Plant Disease Detection</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <!-- Info Modal -->
+  <div class="modal fade" id="infoModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold">⚠️ Notice</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body text-center">
+          <h5 class="fw-bold mb-3" style="font-size:1.3rem;">
+             This model currently detects only <span class="text-danger">15 categories</span>:
+          </h5>
+          <div class="d-flex flex-wrap justify-content-center gap-2">
+            <span class="badge bg-danger">Pepper__bell___Bacterial_spot</span>
+            <span class="badge bg-success">Pepper__bell___healthy</span>
+            <span class="badge bg-danger">Potato___Early_blight</span>
+            <span class="badge bg-danger">Potato___Late_blight</span>
+            <span class="badge bg-success">Potato___healthy</span>
+            <span class="badge bg-danger">Tomato_Bacterial_spot</span>
+            <span class="badge bg-danger">Tomato_Early_blight</span>
+            <span class="badge bg-danger">Tomato_Late_blight</span>
+            <span class="badge bg-danger">Tomato_Leaf_Mold</span>
+            <span class="badge bg-danger">Tomato_Septoria_leaf_spot</span>
+            <span class="badge bg-danger">Tomato_Spider_mites_Two_spotted_spider_mite</span>
+            <span class="badge bg-danger">Tomato__Target_Spot</span>
+            <span class="badge bg-danger">Tomato__Tomato_YellowLeaf__Curl_Virus</span>
+            <span class="badge bg-danger">Tomato__Tomato_mosaic_virus</span>
+            <span class="badge bg-success">Tomato_healthy</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alert Modal -->
+  <div class="modal fade" id="alertModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-white">
+          <h5 class="modal-title fw-bold">⚠️ Alert</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body text-center">
+          <p class="fw-bold">Please select an image before uploading!</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-success w-100" data-bs-dismiss="modal">OK</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Container -->
+  <div class="container card p-4">
+    <div class="d-flex justify-content-between align-items-center">
+      <h2 class="mb-4">🌿 Plant Disease Detection</h2>
+      <button id="darkToggle" class="btn btn-outline-secondary">🌙 Dark Mode</button>
+    </div>
+
+    <!-- User Guide -->
+    <div class="alert alert-info">
+      📸 Please upload <b>one clear leaf image</b> only. Make sure it is sharp, well-lit, and not blurry.
+    </div>
+
+    <!-- Upload Form -->
+    <div class="mb-3">
+      <input type="file" id="fileInput" accept="image/*" class="form-control">
+    </div>
+    <button class="btn btn-success w-100" onclick="uploadImage()">Upload & Predict</button>
+
+    <!-- Result -->
+    <div id="result" class="mt-4"></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Show modal on page load
+    window.onload = () => new bootstrap.Modal(document.getElementById('infoModal')).show();
+
+    let currentPredictions = [];
+    let currentIndex = 0;
+
+    function uploadImage() {
+      const fileInput = document.getElementById("fileInput");
+      if (!fileInput.files.length) {
+        new bootstrap.Modal(document.getElementById('alertModal')).show();
+        return;
+      }
+
+      const formData = new FormData(); 
+      formData.append("file", fileInput.files[0]);
+
+      fetch("/predict", { method: "POST", body: formData })
+        .then(res => res.json())
+        .then(data => {
+          currentPredictions = data.predictions;
+          currentIndex = 0;
+
+          // Left side: Top-3 + Preview
+          let html = `<div class="row">
+                        <div class="col-md-6">
+                          <h4>🔎 Top-3 Predictions</h4>
+                          <ul class='list-group'>`;
+          currentPredictions.forEach(p => html += `<li class="list-group-item d-flex justify-content-between align-items-center"><span>${p.class}</span><span class="badge bg-primary rounded-pill">${(p.probability*100).toFixed(2)}%</span></li>`);
+          html += `</ul><div id="preview" class="mt-3 text-center"></div></div>
+                   <div class="col-md-6" id="diseaseInfo"></div></div>`;
+
+          document.getElementById("result").innerHTML = html;
+
+          // Preview uploaded image
+          const reader = new FileReader();
+          reader.onload = e => document.getElementById("preview").innerHTML = `<img src="${e.target.result}" class="img-fluid rounded shadow">`;
+          reader.readAsDataURL(fileInput.files[0]);
+
+          // Show info for Top-1
+          showDiseaseInfo(0);
+        })
+        .catch(() => document.getElementById("result").innerHTML = "<p class='text-danger'>❌ Error predicting!</p>");
+    }
+
+    function showDiseaseInfo(index) {
+      currentIndex = index;
+      const p = currentPredictions[currentIndex];
+      const info = p.info || {};
+      const html = `
+        <h4>📖 Disease Information</h4>
+        <h5>${p.class}</h5>
+        <div class="mb-5"></div>
+        <h6>⚠ Symptoms:</h6>
+        <ul class="list-unstyled text-start">
+          ${ (info.symptoms || "N/A").split(";").map(s => `<li> ${s.trim()}</li>`).join("") }
+        </ul>
+        <h6>🛡 Prevention:</h6>
+        <ul class="list-unstyled text-start">
+          ${ (info.prevention || "N/A").split(";").map(pv => `<li> ${pv.trim()}</li>`).join("") }
+        </ul>
+        <div class="d-flex justify-content-between">
+          <button class="btn btn-outline-secondary" onclick="prevDisease()">◀</button>
+          <button class="btn btn-outline-secondary" onclick="nextDisease()">▶</button>
+        </div>`;
+      document.getElementById("diseaseInfo").innerHTML = html;
+    }
+
+    function prevDisease() {
+      showDiseaseInfo((currentIndex - 1 + currentPredictions.length) % currentPredictions.length);
+    }
+    function nextDisease() {
+      showDiseaseInfo((currentIndex + 1) % currentPredictions.length);
+    }
+
+    // Dark Mode Toggle
+    document.addEventListener("DOMContentLoaded", () => {
+      const toggleBtn = document.getElementById("darkToggle");
+      toggleBtn.addEventListener("click", () => {
+        document.body.classList.toggle("dark-mode");
+        toggleBtn.textContent = document.body.classList.contains("dark-mode") ? "☀️ Light Mode" : "🌙 Dark Mode";
+      });
+    });
+  </script>
+</body>
+</html>
