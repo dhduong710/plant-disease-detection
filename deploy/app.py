@@ -6,7 +6,7 @@ from flask import Flask, request, jsonify, render_template
 
 # Config
 
-DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+DEVICE = torch.device("cpu")
 IMG_SIZE = 300
 MODEL_PATH = "deploy/models/efficientnet_b3_cbam_mixup_cutmix.pt"
 
@@ -97,9 +97,10 @@ class EfficientNet_CBAM(nn.Module):
 
 # Load model
 
-model = EfficientNet_CBAM(num_classes=len(CLASS_NAMES)).to(DEVICE)
-model.load_state_dict(torch.load(MODEL_PATH, map_location=DEVICE))
+model = EfficientNet_CBAM(num_classes=len(CLASS_NAMES))
+model.load_state_dict(torch.load(MODEL_PATH, map_location="cpu"))
 model.eval()
+
 
 # Transform
 
