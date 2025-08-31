@@ -8,16 +8,26 @@ from flask import Flask, request, jsonify, render_template
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 IMG_SIZE = 300
-MODEL_PATH = "D:/saved_models/efficientnet_b3_cbam_mixup_cutmix.pt"
-DATA_ROOT = r"D:\dataset_split"
+MODEL_PATH = "deploy/models/efficientnet_b3_cbam_mixup_cutmix.pt"
 
+CLASS_NAMES = [
+    "Pepper__bell___Bacterial_spot",
+    "Pepper__bell___healthy",
+    "Potato___Early_blight",
+    "Potato___Late_blight",
+    "Potato___healthy",
+    "Tomato_Bacterial_spot",
+    "Tomato_Early_blight",
+    "Tomato_Late_blight",
+    "Tomato_Leaf_Mold",
+    "Tomato_Septoria_leaf_spot",
+    "Tomato_Spider_mites_Two_spotted_spider_mite",
+    "Tomato__Target_Spot",
+    "Tomato__Tomato_YellowLeaf__Curl_Virus",
+    "Tomato__Tomato_mosaic_virus",
+    "Tomato_healthy"
+]
 
-# Load class mapping
-
-temp_dataset = datasets.ImageFolder(f"{DATA_ROOT}/train")
-idx_to_class = {v: k for k, v in temp_dataset.class_to_idx.items()}
-CLASS_NAMES = [idx_to_class[i] for i in range(len(idx_to_class))]
-print("Classes:", CLASS_NAMES)
 
 
 # CBAM Attention
@@ -105,64 +115,64 @@ val_transform = transforms.Compose([
 
 DISEASE_INFO = {
     "Pepper__bell___Bacterial_spot": {
-        "symptoms": "Small brown scabby spots on fruit; Leaf drop exposing fruit to sunscald.",
-        "prevention": "Use certified seed/transplants; Sanitize tools; Rotate crops; Avoid wet handling."
+        "symptoms": "Small brown scabby spots on fruit; Leaf drop exposing fruit to sunscald",
+        "prevention": "Use certified seed/transplants; Sanitize tools; Rotate crops; Avoid wet handling"
     },
     "Pepper__bell___healthy": {
-        "symptoms": "Healthy leaf with no symptoms.",
-        "prevention": "Maintain good growing conditions."
+        "symptoms": "Healthy leaf with no symptoms",
+        "prevention": "Maintain good growing conditions"
     },
     "Potato___Early_blight": {
-        "symptoms": "Dark concentric-ring lesions on leaves, stems, fruit; Defoliation.",
-        "prevention": "Rotate crops; Remove debris; Use resistant varieties; Apply protectant fungicides."
+        "symptoms": "Dark concentric-ring lesions on leaves, stems, fruit; Defoliation",
+        "prevention": "Rotate crops; Remove debris; Use resistant varieties; Apply protectant fungicides"
     },
     "Potato___Late_blight": {
-        "symptoms": "Water-soaked lesions quickly turning brown with possible white mold.",
-        "prevention": "Use disease-free seed; Sterilize soil; Remove infected foliage; Apply fungicides."
+        "symptoms": "Water-soaked lesions quickly turning brown with possible white mold",
+        "prevention": "Use disease-free seed; Sterilize soil; Remove infected foliage; Apply fungicides"
     },
     "Potato___healthy": {
-        "symptoms": "Healthy leaf with no symptoms.",
-        "prevention": "Maintain good growing conditions."
+        "symptoms": "Healthy leaf with no symptoms",
+        "prevention": "Maintain good growing conditions"
     },
     "Tomato_Bacterial_spot": {
-        "symptoms": "Dark circular spots with yellow halo on leaves; Scabby fruit; Defoliation.",
-        "prevention": "Use certified seed; Sanitize tools; Rotate crops; Avoid wet handling."
+        "symptoms": "Dark circular spots with yellow halo on leaves; Scabby fruit; Defoliation",
+        "prevention": "Use certified seed; Sanitize tools; Rotate crops; Avoid wet handling"
     },
     "Tomato_Early_blight": {
-        "symptoms": "Bull’s-eye lesions on older leaves; Defoliation and sunscald.",
-        "prevention": "Remove debris; Improve airflow; Rotate crops; Apply fungicide early."
+        "symptoms": "Bull’s-eye lesions on older leaves; Defoliation and sunscald",
+        "prevention": "Remove debris; Improve airflow; Rotate crops; Apply fungicide early"
     },
     "Tomato_Late_blight": {
-        "symptoms": "Rapid brown decay with water-soaked spots; Possible white mold.",
-        "prevention": "Use resistant varieties; Avoid overhead watering; Prune; Apply fungicide."
+        "symptoms": "Rapid brown decay with water-soaked spots; Possible white mold",
+        "prevention": "Use resistant varieties; Avoid overhead watering; Prune; Apply fungicide"
     },
     "Tomato_Leaf_Mold": {
-        "symptoms": "Yellow patches with velvety mold underside; Defoliation.",
-        "prevention": "Improve ventilation; Avoid overhead watering; Remove affected leaves."
+        "symptoms": "Yellow patches with velvety mold underside; Defoliation",
+        "prevention": "Improve ventilation; Avoid overhead watering; Remove affected leaves"
     },
     "Tomato_Septoria_leaf_spot": {
-        "symptoms": "Circular leaf spots with dark centers and pale margins; Defoliation.",
-        "prevention": "Remove infected debris; Improve airflow; Use fungicide if needed."
+        "symptoms": "Circular leaf spots with dark centers and pale margins; Defoliation",
+        "prevention": "Remove infected debris; Improve airflow; Use fungicide if needed"
     },
     "Tomato_Spider_mites_Two_spotted_spider_mite": {
-        "symptoms": "Yellow stippling on leaves; Webbing; Leaf browning.",
-        "prevention": "Use miticides or horticultural oils; Introduce predators; Reduce leaf dryness."
+        "symptoms": "Yellow stippling on leaves; Webbing; Leaf browning",
+        "prevention": "Use miticides or horticultural oils; Introduce predators; Reduce leaf dryness"
     },
     "Tomato__Target_Spot": {
-        "symptoms": "Circular lesions with concentric rings on leaves/fruit.",
-        "prevention": "Remove debris; Apply fungicide; Rotate crops; Ensure airflow."
+        "symptoms": "Circular lesions with concentric rings on leaves/fruit",
+        "prevention": "Remove debris; Apply fungicide; Rotate crops; Ensure airflow"
     },
     "Tomato__Tomato_YellowLeaf__Curl_Virus": {
-        "symptoms": "Leaves curl, yellow; Stunted growth; Flower drop.",
-        "prevention": "Control whiteflies; Use resistant cultivars; Remove weeds."
+        "symptoms": "Leaves curl, yellow; Stunted growth; Flower drop",
+        "prevention": "Control whiteflies; Use resistant cultivars; Remove weeds"
     },
     "Tomato__Tomato_mosaic_virus": {
-        "symptoms": "Mosaic-pattern leaves; Distortion; Stunting.",
-        "prevention": "Use clean seed; Sanitize tools; Avoid tobacco contact."
+        "symptoms": "Mosaic-pattern leaves; Distortion; Stunting",
+        "prevention": "Use clean seed; Sanitize tools; Avoid tobacco contact"
     },
     "Tomato_healthy": {
-        "symptoms": "Healthy leaf with no symptoms.",
-        "prevention": "Maintain optimal growing conditions."
+        "symptoms": "Healthy leaf with no symptoms",
+        "prevention": "Maintain optimal growing conditions"
     }
 }
 
