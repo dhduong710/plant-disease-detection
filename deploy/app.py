@@ -8,7 +8,7 @@ from flask import Flask, request, jsonify, render_template
 
 DEVICE = torch.device("cpu")
 IMG_SIZE = 300
-MODEL_PATH = "deploy/models/efficientnet_b3_cbam_mixup_cutmix.pt"
+MODEL_PATH = "models/efficientnet_b3_cbam_mixup_cutmix.pt"
 
 CLASS_NAMES = [
     "Pepper__bell___Bacterial_spot",
