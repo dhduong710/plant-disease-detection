@@ -205,16 +205,15 @@ def predict_image(image):
 
 @app.route("/predict", methods=["POST"])
 def predict():
-    if "file" not in request.files:
-        return jsonify({"error": "No file uploaded"}), 400
+    try:
+        if "file" not in request.files:
+            return jsonify({"error": "No file uploaded"}), 400
 
-    file = request.files["file"]
-    results = predict_image(file)
-    return jsonify({"predictions": results})
+        file = request.files["file"]
+        results = predict_image(file)
+        return jsonify({"predictions": results})
+    except Exception as e:
+        import traceback
+        traceback.print_exc()  
+        return jsonify({"error": str(e)}), 500
 
-@app.route("/", methods=["GET"])
-def home():
-    return render_template("index.html")
-
-if __name__ == "__main__":
-    app.run(debug=True)
