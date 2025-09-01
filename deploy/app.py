@@ -77,7 +77,7 @@ class CBAM(nn.Module):
 class EfficientNet_CBAM(nn.Module):
     def __init__(self, num_classes):
         super().__init__()
-        backbone = models.efficientnet_b3(weights=models.EfficientNet_B3_Weights.IMAGENET1K_V1)
+        backbone = models.efficientnet_b3(weights=None)
         in_features = backbone.classifier[1].in_features
         self.backbone = backbone
         self.cbam = CBAM(in_features)
