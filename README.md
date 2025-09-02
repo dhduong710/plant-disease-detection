@@ -1,5 +1,7 @@
 # Plant Disease Detection 
 
+Deployment link of the project: https://inosuke710-plantcare.hf.space/
+
 Download dataset here: https://www.kaggle.com/datasets/emmarex/plantdisease
 
 This project focuses on building deep learning models for **plant disease detection** from leaf images. The dataset consists of ~20,000 images across multiple classes of healthy and diseased leaves.

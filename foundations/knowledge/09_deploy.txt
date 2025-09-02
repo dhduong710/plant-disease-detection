@@ -1,0 +1,56 @@
+Guide: Deploying a Web Application on Hugging Face using Docker
+
+1. Prepare the Project
+- Ensure the project has the following files:
+  - app.py (Flask/Gradio application entry point)
+  - index.html (frontend page)
+  - style.css (styling file)
+  - requirements.txt (Python dependencies)
+  - Dockerfile (Docker build instructions)
+  - models/ (optional, if the model file is required)
+
+2. Write a requirements.txt
+Example:
+Flask
+torch
+torchvision
+Pillow
+psutil
+gunicorn
+
+3. Create a Dockerfile
+Example:
+FROM python:3.9-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+CMD ["gunicorn", "-b", "0.0.0.0:7860", "app:app"]
+
+4. Push to Hugging Face Spaces
+- Create a new Space on Hugging Face and select Docker as the SDK.
+- Clone the Space repository locally.
+- Copy all project files into the Space directory.
+- Push the code using Git commands:
+  git add .
+  git commit -m "Deploy web app with Docker"
+  git push
+
+5. Deployment
+- Hugging Face will automatically build the Docker container.
+- After building, the application will be accessible at the Space public URL.
+
+6. Update the Project
+- To make changes (such as editing app.py, index.html, style.css, or Dockerfile):
+  git add .
+  git commit -m "Update"
+  git push
+- Hugging Face will rebuild the container automatically.
+
+Notes:
+- Free Spaces have limited resources (RAM/CPU). Optimize models for smaller size.
+- For large models, consider using Git LFS (Large File Storage).

@@ -1,0 +1,94 @@
+# HTML and CSS
+
+## 1. Introduction
+HTML (HyperText Markup Language) and CSS (Cascading Style Sheets) are the two fundamental technologies for building web pages. 
+- HTML provides the structure of the page.
+- CSS controls the presentation, formatting, and layout.
+
+Together, they are the backbone of modern front-end web development.
+
+## 2. HTML Basics
+- HTML is a markup language, not a programming language.
+- HTML documents are made up of elements, enclosed by tags.
+
+### Common HTML Elements
+- <html>: Root element of an HTML page.
+- <head>: Contains meta information, title, and links to CSS/JS.
+- <body>: Contains the content that is displayed in the browser.
+- <h1> to <h6>: Headings, from largest to smallest.
+- <p>: Paragraph text.
+- <a>: Anchor tag, used for hyperlinks.
+- <img>: Embeds an image.
+- <div>: Block-level container for grouping elements.
+- <span>: Inline container for styling a portion of text.
+- <form>, <input>, <button>: Used to collect user input.
+
+### Attributes
+- Elements can have attributes, e.g. <img src="image.png" alt="Description">.
+- Common attributes: id, class, src, href, style, alt.
+
+## 3. CSS Basics
+- CSS is used to style and layout HTML elements.
+- CSS rules consist of selectors and declarations.
+
+### Example
+css:
+p {
+  color: blue;
+  font-size: 16px;
+}
+
+This rule sets all <p> elements to have blue text and 16px font size.
+
+### Selectors
+- Element selector: p { ... }
+- Class selector: .classname { ... }
+- ID selector: #idname { ... }
+- Descendant selector: div p { ... } (selects <p> inside <div>)
+- Grouping: h1, h2, p { ... }
+
+### Properties
+- Colors: color, background-color
+- Text: font-size, font-family, font-weight, text-align
+- Box Model: margin, padding, border, width, height
+- Layout: display, position, flex, grid
+
+## 4. The Box Model
+Every HTML element is treated as a rectangular box, consisting of:
+1. Content
+2. Padding
+3. Border
+4. Margin
+
+Understanding the box model is crucial for layout design.
+
+## 5. CSS Positioning and Layout
+- static: Default positioning.
+- relative: Positioned relative to its normal position.
+- absolute: Positioned relative to the nearest positioned ancestor.
+- fixed: Positioned relative to the viewport.
+- sticky: Switches between relative and fixed, depending on scroll.
+
+### Modern Layout Techniques
+- Flexbox: One-dimensional layouts (row or column).
+- Grid: Two-dimensional layouts (rows and columns).
+
+## 6. Responsive Design
+- Use media queries to adapt layout to different screen sizes.
+- Example:
+css:
+@media (max-width: 600px) {
+  body {
+    font-size: 14px;
+  }
+}
+
+## 7. Best Practices
+- Keep HTML semantic: use tags according to their meaning (<header>, <footer>, <article>).
+- Separate structure (HTML) and style (CSS).
+- Use external CSS files for maintainability.
+- Follow naming conventions for classes and IDs.
+- Test on multiple browsers and devices.
+
+## 8. Conclusion
+HTML defines the structure, while CSS defines the style. Mastering both allows developers to create responsive, visually appealing, and accessible websites.

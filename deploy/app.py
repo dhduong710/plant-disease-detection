@@ -2,10 +2,10 @@ import torch
 import torch.nn as nn
 from torchvision import transforms, models
 from PIL import Image
+import psutil
 from flask import Flask, request, jsonify, render_template
-import psutil   
 
-# Config
+# -------- Config --------
 DEVICE = torch.device("cpu")
 IMG_SIZE = 300
 MODEL_PATH = "models/efficientnet_b3_cbam_mixup_cutmix.pt"
@@ -28,7 +28,7 @@ CLASS_NAMES = [
     "Tomato_healthy"
 ]
 
-# -------------------- CBAM Attention --------------------
+# -------- CBAM --------
 class ChannelAttention(nn.Module):
     def __init__(self, in_planes, ratio=16):
         super().__init__()
@@ -69,11 +69,11 @@ class CBAM(nn.Module):
         x = x * self.spatial_att(x)
         return x
 
-# -------------------- Model --------------------
+# -------- Model --------
 class EfficientNet_CBAM(nn.Module):
     def __init__(self, num_classes):
         super().__init__()
-        backbone = models.efficientnet_b3(weights=None)  
+        backbone = models.efficientnet_b3(weights=None)
         in_features = backbone.classifier[1].in_features
         self.backbone = backbone
         self.cbam = CBAM(in_features)
@@ -90,19 +90,19 @@ class EfficientNet_CBAM(nn.Module):
         x = self.backbone.classifier(x)
         return x
 
-# -------------------- Load model --------------------
+# -------- Load model --------
 print("Loading model...")
 model = EfficientNet_CBAM(num_classes=len(CLASS_NAMES))
 model.load_state_dict(torch.load(MODEL_PATH, map_location="cpu"))
 model.eval()
-print("✅ Model loaded!")
+print("Model loaded!")
 
-# check RAM
+# -------- RAM info --------
 process = psutil.Process()
 mem_mb = process.memory_info().rss / (1024 * 1024)
 print(f"Memory used after loading model: {mem_mb:.2f} MB")
 
-# -------------------- Transform --------------------
+# -------- Transform --------
 val_transform = transforms.Compose([
     transforms.Resize((IMG_SIZE, IMG_SIZE)),
     transforms.ToTensor(),
@@ -110,7 +110,7 @@ val_transform = transforms.Compose([
                          [0.229, 0.224, 0.225])
 ])
 
-# -------------------- Disease Info --------------------
+# -------- Disease Info --------
 DISEASE_INFO = {
     "Pepper__bell___Bacterial_spot": {
         "symptoms": "Small brown scabby spots on fruit; Leaf drop exposing fruit to sunscald",
@@ -174,7 +174,7 @@ DISEASE_INFO = {
     }
 }
 
-# -------------------- Flask API --------------------
+# -------- Flask app --------
 app = Flask(__name__)
 
 def predict_image(image):
@@ -200,20 +200,15 @@ def predict_image(image):
 
 @app.route("/predict", methods=["POST"])
 def predict():
-    try:
-        if "file" not in request.files:
-            return jsonify({"error": "No file uploaded"}), 400
-        file = request.files["file"]
-        results = predict_image(file)
-        return jsonify({"predictions": results})
-    except Exception as e:
-        import traceback
-        traceback.print_exc()
-        return jsonify({"error": str(e)}), 500
+    if "file" not in request.files:
+        return jsonify({"error": "No file uploaded"}), 400
+    file = request.files["file"]
+    results = predict_image(file)
+    return jsonify({"predictions": results})
 
-@app.route("/", methods=["GET"])
+@app.route("/")
 def home():
     return render_template("index.html")
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=7860)
